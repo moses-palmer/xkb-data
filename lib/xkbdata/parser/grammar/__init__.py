@@ -17,12 +17,9 @@
 
 import ply.yacc
 
-from .grammar import *
+from .._tokens import *
 
 
-def parser(*args, **kwargs):
-    """Generates the parser.
-
-    All arguments are passed to :func:`ply.yacc.yacc`.
-    """
-    return ply.yacc.yacc(*args, **kwargs)
+def p_error(p):
+    raise ply.yacc.GrammarError(
+        'unexpected expression: %s', p)

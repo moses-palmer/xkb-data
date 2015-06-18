@@ -16,10 +16,49 @@
 # this program. If not, see <http://www.gnu.org/licenses/>.
 
 import ply.lex
+import re
+
+
+from xkbdata._util import string_unescape
+
+
+precedence = (
+    ('right', 'EQUALS'),
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
+    ('left', 'EXCLAM', 'INVERT'),
+    ('left', 'OPAREN'))
 
 
 #: The token names; this list will be populated by :func:`token`
 tokens = []
+
+
+#: The symbols
+symbols = {
+    '=': 'EQUALS',
+    '+': 'PLUS',
+    '-': 'MINUS',
+    '/': 'DIVIDE',
+    '*': 'TIMES',
+    '{': 'OBRACE',
+    '}': 'CBRACE',
+    '(': 'OPAREN',
+    ')': 'CPAREN',
+    '[': 'OBRACKET',
+    ']': 'CBRACKET',
+    '.': 'DOT',
+    ',': 'COMMA',
+    ';': 'SEMI',
+    '!': 'EXCLAM',
+    '~': 'INVERT'
+}
+
+globals().update(
+    ('t_' + v, re.escape(k))
+    for k, v in symbols.items())
+tokens.extend(symbols.values())
+
 
 
 def token(f):
@@ -38,6 +77,55 @@ def token(f):
 
 #: A single line comment
 t_ignore_SLCOMMENT = r'(\#|//)[^\n]*'
+
+
+#: A general identifier
+@token
+def t_ID(t):
+    r'[A-Za-z][A-Za-z0-9_]*'
+    return t
+
+
+#: A key name
+@token
+def t_KEYNAME(t):
+    r'<([^\s]+)>'
+    # Strip the brackets
+    t.value = t.value[1:-1]
+
+    return t
+
+
+#: A floating point literal
+@token
+def t_FLOATLIT(t):
+    r'\d+\.\d+'
+    t.value = float(t.value)
+    return t
+
+
+#: A hex literal
+@token
+def t_HEXLIT(t):
+    r'0x[0-9a-fA-F]+'
+    t.value = int(t.value, 16)
+    return t
+
+
+#: A decimal literal
+@token
+def t_DECLIT(t):
+    r'\d+'
+    t.value = int(t.value)
+    return t
+
+
+#: A string literal
+@token
+def t_STRINGLIT(t):
+    r'"(\\"|[^"])*?"'
+    t.value = string_unescape(t.value)
+    return t
 
 
 # Ignore whitespace

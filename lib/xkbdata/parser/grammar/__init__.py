@@ -21,5 +21,12 @@ from .._tokens import *
 
 
 def p_error(p):
+    # The grammar allows for reserved words to be used as identifiers in some
+    # cases; this error handling corresponds to the ``Element`` definition in
+    # the yacc grammar in xkbcomp
+    if p and p.type in reserved.values():
+        p.type = 'ID'
+        return p
+
     raise ply.yacc.GrammarError(
         'unexpected expression: %s', p)

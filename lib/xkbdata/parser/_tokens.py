@@ -60,6 +60,57 @@ globals().update(
 tokens.extend(symbols.values())
 
 
+#: The reserved words
+reserved = {
+    'action': 'ACTION',
+    'alias': 'ALIAS',
+    'alphanumeric_keys': 'ALPHANUMERIC_KEYS',
+    'alternate': 'ALTERNATE',
+    'alternate_group': 'ALTERNATE_GROUP',
+    'augment': 'AUGMENT',
+    'default': 'DEFAULT',
+    'function_keys': 'FUNCTION_KEYS',
+    'group': 'GROUP',
+    'hidden': 'HIDDEN',
+    'include': 'INCLUDE',
+    'indicator': 'INDICATOR',
+    'interpret': 'INTERPRET',
+    'key': 'KEY',
+    'keypad_keys': 'KEYPAD_KEYS',
+    'keys': 'KEYS',
+    'logo': 'LOGO',
+    'modifier_keys': 'MODIFIER_KEYS',
+    'mod_map': 'MODIFIER_MAP',
+    'modifier_map': 'MODIFIER_MAP',
+    'modmap': 'MODIFIER_MAP',
+    'outline': 'OUTLINE',
+    'overlay': 'OVERLAY',
+    'override': 'OVERRIDE',
+    'partial': 'PARTIAL',
+    'replace': 'REPLACE',
+    'row': 'ROW',
+    'section': 'SECTION',
+    'shape': 'SHAPE',
+    'solid': 'SOLID',
+    'text': 'TEXT',
+    'type': 'TYPE',
+    'virtual': 'VIRTUAL',
+    'virtual_modifiers': 'VIRTUAL_MODIFIERS',
+    'xkb_compat': 'XKB_COMPATMAP',
+    'xkb_compat_map': 'XKB_COMPATMAP',
+    'xkb_compatibility': 'XKB_COMPATMAP',
+    'xkb_compatibility_map': 'XKB_COMPATMAP',
+    'xkb_geometry': 'XKB_GEOMETRY',
+    'xkb_keycodes': 'XKB_KEYCODES',
+    'xkb_keymap': 'XKB_KEYMAP',
+    'xkb_layout': 'XKB_LAYOUT',
+    'xkb_semantics': 'XKB_SEMANTICS',
+    'xkb_symbols': 'XKB_SYMBOLS',
+    'xkb_types': 'XKB_TYPES'
+}
+
+tokens.extend(reserved.values())
+
 
 def token(f):
     """Marks a function as a token handler.
@@ -83,6 +134,11 @@ t_ignore_SLCOMMENT = r'(\#|//)[^\n]*'
 @token
 def t_ID(t):
     r'[A-Za-z][A-Za-z0-9_]*'
+    # Make sure that this wildcard matcher does not shadow reserved words;
+    # reserved words are case-insensitive; they may appear as field names as
+    # well, so we need to retry in some cases in xkbdata.parser.grammar.p_error
+    t.type = reserved.get(t.value.lower(), 'ID')
+
     return t
 
 
